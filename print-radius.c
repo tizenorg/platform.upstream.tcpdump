@@ -56,6 +56,7 @@ static const char rcsid[] _U_ =
 #include <string.h>
 
 #include <stdio.h>
+#include <time.h>
 
 #include "interface.h"
 #include "addrtoname.h"

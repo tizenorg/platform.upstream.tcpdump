@@ -39,6 +39,10 @@ static const char rcsid[] _U_ =
 #include "os-proto.h"
 #endif
 
+#ifdef HAVE_SIGSET
+void *sigset(int signum, void (*handler)(int));
+#endif
+
 #include "setsignal.h"
 
 /*
