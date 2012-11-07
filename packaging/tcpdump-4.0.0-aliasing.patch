@@ -1,0 +1,118 @@
+Index: icmp6.h
+===================================================================
+--- icmp6.h.orig
++++ icmp6.h
+@@ -404,7 +404,11 @@ struct icmp6_router_renum {	/* router re
+ 	u_int8_t	rr_segnum;
+ 	u_int8_t	rr_flags;
+ 	u_int16_t	rr_maxdelay;
++	union {
++		u_int8_t	rr_reserved8[4];
++		u_int16_t	rr_reserved16[2];
+ 	u_int32_t	rr_reserved;
++	};
+ };
+ #define ICMP6_RR_FLAGS_TEST		0x80
+ #define ICMP6_RR_FLAGS_REQRESULT	0x40
+Index: print-icmp.c
+===================================================================
+--- print-icmp.c.orig
++++ print-icmp.c
+@@ -47,6 +47,12 @@ static const char rcsid[] _U_ =
+  * Per RFC 792, September 1981.
+  */
+ 
++/* rfc1191 */
++struct mtu_discovery {
++	u_int16_t unused;
++	u_int16_t nexthopmtu;
++};
++
+ /*
+  * Structure of an icmp header.
+  */
+@@ -61,8 +67,12 @@ struct icmp {
+ 			u_int16_t icd_id;
+ 			u_int16_t icd_seq;
+ 		} ih_idseq;
++		union {
+ 		u_int32_t ih_void;
++			struct mtu_discovery ih_mtu_discovery;
++		};
+ 	} icmp_hun;
++#define icmp_mtu_discovery icmp_hun.ih_mtu_discovery
+ #define	icmp_pptr	icmp_hun.ih_pptr
+ #define	icmp_gwaddr	icmp_hun.ih_gwaddr
+ #define	icmp_id		icmp_hun.ih_idseq.icd_id
+@@ -243,12 +253,6 @@ static struct tok type2str[] = {
+ 	{ 0,				NULL }
+ };
+ 
+-/* rfc1191 */
+-struct mtu_discovery {
+-	u_int16_t unused;
+-	u_int16_t nexthopmtu;
+-};
+-
+ /* rfc1256 */
+ struct ih_rdiscovery {
+ 	u_int8_t ird_addrnum;
+@@ -413,7 +417,7 @@ icmp_print(const u_char *bp, u_int plen,
+ 		case ICMP_UNREACH_NEEDFRAG:
+ 		    {
+ 			register const struct mtu_discovery *mp;
+-			mp = (struct mtu_discovery *)(u_char *)&dp->icmp_void;
++			mp = &dp->icmp_mtu_discovery;
+ 			mtu = EXTRACT_16BITS(&mp->nexthopmtu);
+ 			if (mtu) {
+ 				(void)snprintf(buf, sizeof(buf),
+Index: print-icmp6.c
+===================================================================
+--- print-icmp6.c.orig
++++ print-icmp6.c
+@@ -1279,7 +1279,7 @@ icmp6_rrenum_print(const u_char *bp, con
+ 		printf("seg=%u,", rr6->rr_segnum);
+ 		printf("maxdelay=%u", EXTRACT_16BITS(&rr6->rr_maxdelay));
+ 		if (rr6->rr_reserved)
+-			printf("rsvd=0x%x", EXTRACT_32BITS(&rr6->rr_reserved));
++			printf("rsvd=0x%x", EXTRACT_16BITS(&rr6->rr_reserved16[0]));
+ 		/*[*/
+ 		printf("]");
+ #undef F
+Index: print-timed.c
+===================================================================
+--- print-timed.c.orig
++++ print-timed.c
+@@ -86,8 +86,8 @@ timed_print(register const u_char *bp)
+ 			fputs(" [|timed]", stdout);
+ 			return;
+ 		}
+-		sec = EXTRACT_32BITS(&tsp->tsp_time.tv_sec);
+-		usec = EXTRACT_32BITS(&tsp->tsp_time.tv_usec);
++		sec = EXTRACT_32BITS(&tsp->tsp_time.tv_sec32[0]);
++		usec = EXTRACT_32BITS(&tsp->tsp_time.tv_usec32[0]);
+ 		if (usec < 0)
+ 			/* corrupt, skip the rest of the packet */
+ 			return;
+Index: timed.h
+===================================================================
+--- timed.h.orig
++++ timed.h
+@@ -54,7 +54,16 @@ struct tsp {
+ 	u_int8_t	tsp_vers;
+ 	u_int16_t	tsp_seq;
+ 	union {
+-		struct tsp_timeval tspu_time;
++		struct {
++			union {
++				int	tv_sec32[2];
++				long	tv_sec;
++			};
++			union {
++				int	tv_usec32[2];
++				long	tv_usec;
++				};
++		} tspu_time;
+ 		int8_t tspu_hopcnt;
+ 	} tsp_u;
+ 	int8_t tsp_name[256];
