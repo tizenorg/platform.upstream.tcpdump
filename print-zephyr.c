@@ -134,7 +134,7 @@ str_to_lower(char *string)
 void
 zephyr_print(const u_char *cp, int length)
 {
-    struct z_packet z;
+    struct z_packet z = {};
     char *parse = (char *) cp;
     int parselen = length;
     char *s;
