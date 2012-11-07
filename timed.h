@@ -54,7 +54,16 @@ struct tsp {
 	u_int8_t	tsp_vers;
 	u_int16_t	tsp_seq;
 	union {
-		struct tsp_timeval tspu_time;
+		struct {
+			union {
+				int	tv_sec32[2];
+				long	tv_sec;
+			};
+			union {
+				int	tv_usec32[2];
+				long	tv_usec;
+				};
+		} tspu_time;
 		int8_t tspu_hopcnt;
 	} tsp_u;
 	int8_t tsp_name[256];

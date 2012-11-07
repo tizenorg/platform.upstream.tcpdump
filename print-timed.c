@@ -86,8 +86,8 @@ timed_print(register const u_char *bp)
 			fputs(" [|timed]", stdout);
 			return;
 		}
-		sec = EXTRACT_32BITS(&tsp->tsp_time.tv_sec);
-		usec = EXTRACT_32BITS(&tsp->tsp_time.tv_usec);
+		sec = EXTRACT_32BITS(&tsp->tsp_time.tv_sec32[0]);
+		usec = EXTRACT_32BITS(&tsp->tsp_time.tv_usec32[0]);
 		if (usec < 0)
 			/* corrupt, skip the rest of the packet */
 			return;

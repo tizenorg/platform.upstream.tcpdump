@@ -1279,7 +1279,7 @@ icmp6_rrenum_print(const u_char *bp, const u_char *ep)
 		printf("seg=%u,", rr6->rr_segnum);
 		printf("maxdelay=%u", EXTRACT_16BITS(&rr6->rr_maxdelay));
 		if (rr6->rr_reserved)
-			printf("rsvd=0x%x", EXTRACT_32BITS(&rr6->rr_reserved));
+			printf("rsvd=0x%x", EXTRACT_16BITS(&rr6->rr_reserved16[0]));
 		/*[*/
 		printf("]");
 #undef F

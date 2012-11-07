@@ -47,6 +47,12 @@ static const char rcsid[] _U_ =
  * Per RFC 792, September 1981.
  */
 
+/* rfc1191 */
+struct mtu_discovery {
+	u_int16_t unused;
+	u_int16_t nexthopmtu;
+};
+
 /*
  * Structure of an icmp header.
  */
@@ -61,8 +67,12 @@ struct icmp {
 			u_int16_t icd_id;
 			u_int16_t icd_seq;
 		} ih_idseq;
+		union {
 		u_int32_t ih_void;
+			struct mtu_discovery ih_mtu_discovery;
+		};
 	} icmp_hun;
+#define icmp_mtu_discovery icmp_hun.ih_mtu_discovery
 #define	icmp_pptr	icmp_hun.ih_pptr
 #define	icmp_gwaddr	icmp_hun.ih_gwaddr
 #define	icmp_id		icmp_hun.ih_idseq.icd_id
@@ -243,12 +253,6 @@ static struct tok type2str[] = {
 	{ 0,				NULL }
 };
 
-/* rfc1191 */
-struct mtu_discovery {
-	u_int16_t unused;
-	u_int16_t nexthopmtu;
-};
-
 /* rfc1256 */
 struct ih_rdiscovery {
 	u_int8_t ird_addrnum;
@@ -413,7 +417,7 @@ icmp_print(const u_char *bp, u_int plen, const u_char *bp2, int fragmented)
 		case ICMP_UNREACH_NEEDFRAG:
 		    {
 			register const struct mtu_discovery *mp;
-			mp = (struct mtu_discovery *)(u_char *)&dp->icmp_void;
+			mp = &dp->icmp_mtu_discovery;
 			mtu = EXTRACT_16BITS(&mp->nexthopmtu);
 			if (mtu) {
 				(void)snprintf(buf, sizeof(buf),

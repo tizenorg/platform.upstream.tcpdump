@@ -404,7 +404,11 @@ struct icmp6_router_renum {	/* router renumbering header */
 	u_int8_t	rr_segnum;
 	u_int8_t	rr_flags;
 	u_int16_t	rr_maxdelay;
+	union {
+		u_int8_t	rr_reserved8[4];
+		u_int16_t	rr_reserved16[2];
 	u_int32_t	rr_reserved;
+	};
 };
 #define ICMP6_RR_FLAGS_TEST		0x80
 #define ICMP6_RR_FLAGS_REQRESULT	0x40
