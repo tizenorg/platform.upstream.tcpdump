@@ -6,9 +6,8 @@ Summary:        A Packet Sniffer
 Url:            http://www.tcpdump.org/
 Group:          Productivity/Networking/Diagnostic
 Source:         http://www.tcpdump.org/release/%{name}-%{version}.tar.gz
-Source1:        tcpdump-qeth
 BuildRequires:  libpcap-devel
-BuildRequires:  libsmi-devel
+#BuildRequires:  libsmi-devel
 BuildRequires:  openssl-devel
 
 %description
